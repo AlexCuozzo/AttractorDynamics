@@ -53,22 +53,22 @@ class NetworkDynamics:
 			overlap=np.array([np.mean(np.multiply(self.myLR.g(patterns_fr[i,:]),un)) for i in range(p)])
 			q_ord_param.append(overlap)
 			m_ord_param.append(overlap/(np.sqrt(self.myLR.intg2)*np.std(un)))
-			print 't',t,'of',T	
+			print('t',t,'of',T)
 		
 		return np.array(q_ord_param),np.array(m_ord_param),np.array(mysol),un
 	
 	# delay response task
 	def DMS(self,T_bckg,T_pres,T_delay,u_init):
 		#background period
-		print 'Background period'
+		print('Background period')
 		self.Input = 0.
 		q_bckg,m_bckg,sol_bckg,un = self.dynamics(T_bckg,u_init,self.patterns_fr)
 		#presentation period
-		print 'Presentation period'
+		print('Presentation period')
 		self.Input = self.amp_stim * self.patterns_current[0]
 		q_pres,m_pres,sol_pres,un = self.dynamics(T_pres,un,self.patterns_fr)
 		#delay period
-		print 'Delay period'
+		print('Delay period')
 		self.Input = 0.
 		q_delay,m_delay,sol_delay,un = self.dynamics(T_delay,un,self.patterns_fr)
 		#concatenate

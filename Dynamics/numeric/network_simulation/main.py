@@ -1,22 +1,30 @@
 import numpy as np
-from classes.learning_rule import *
-from classes.connectivity import *
-from classes.transfer_function import *
-from classes.network_dynamics import *
-import cPickle as pickle
+from Dynamics.numeric.network_simulation.classes.learning_rule import *
+from Dynamics.numeric.network_simulation.classes.connectivity import *
+from Dynamics.numeric.network_simulation.classes.network_dynamics import *
+from Dynamics.numeric.network_simulation.classes.transfer_function import *
+# from classes.learning_rule import *
+# from classes.connectivity import *
+# from classes.transfer_function import *
+# from classes.network_dynamics import *
+#import _pickle as pickle
+import pickle
 import multiprocessing as mt
 import matplotlib.pyplot as plt
 import os
+
+
 directory = 'overlaps'
 if not os.path.exists(directory):
-	    os.makedirs(directory)
+	os.makedirs(directory)
 
-# fixed-point or chaotic attractors as retrival state
-TypeDynamics = 'chaos'
-#TypeDynamics = 'fixedpoint'
+# fixed-point or chaotic attractors as retrieval state
+#TypeDynamics = 'chaos'
+TypeDynamics = 'fixedpoint'
 
 #importing parameters data
-paramfit = pickle.load(open('../parametersFit.p','rb'))
+paramfit = pickle.load(open('../parametersFit.p','rb'), encoding="latin1")
+
 
 # using the median parameters of the fits
 rmax_median = np.median(paramfit[0][0])
@@ -46,14 +54,14 @@ else:
 
 lr = LearningRule(paramLR,tf)
 
-print 'Parameter Values:'
-print 'qg=',lr.qg
-print 'xg=',lr.xg
-print 'bg=',lr.betag
-print 'A=',lr.Amp
-print 'qf=',lr.qf
-print 'xf=',lr.xf
-print 'bf=',lr.betaf
+print('Parameter Values:')
+print('qg=',lr.qg)
+print('xg=',lr.xg)
+print('bg=',lr.betag)
+print('A=',lr.Amp)
+print('qf=',lr.qf)
+print('xf=',lr.xf)
+print('bf=',lr.betaf)
 
 
 
@@ -61,7 +69,11 @@ print 'bf=',lr.betaf
 #connectivity
 paramSim = [50000,0.005,p] #N,c,p
 random_seed = 7 # random seed connectivity
-conn = ConnectivityMatrix(lr,tf,paramSim,random_seed)
+
+#prepared_samples
+provided_patterns = np.load("random_projected_mnist_samples.npy", allow_pickle=True)
+
+conn = ConnectivityMatrix(lr,tf,paramSim,random_seed, provided_patterns=provided_patterns)
 matrix = conn.connectivity_generalized_hebbian()
 # dynamics
 patterns_current = conn.patterns_current
@@ -71,17 +83,17 @@ the_overlaps = []
 the_dynamics = []
 n_real = 10 # number of realizations
 i=0
-while i<=n_real:
 #for i in range(100):
+while i<=n_real:
 	dyn = NetworkDynamics(lr,tf,matrix,patterns_current)
 	u_init = np.random.normal(0,1,paramSim[0])
 	q,m,sol = dyn.DMS(2500,500,6000,u_init)
 	#u_init = patterns_current[0]
 	#q,m,sol = dyn.DMS_Short(500,3000,u_init)
-	print 'Value end m:',m[-1,0]
-	print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
-	print 'The value of i=',i
-	print '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+	print('Value end m:',m[-1,0])
+	print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
+	print('The value of i=',i)
+	print('%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
 	if 0.2<m[-1,0]:
 		the_dynamics.append(sol)
 		pickle.dump(the_dynamics,open('overlaps/the_dynamics.p','wb'))

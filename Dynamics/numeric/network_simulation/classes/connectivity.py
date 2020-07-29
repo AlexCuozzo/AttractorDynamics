@@ -6,7 +6,7 @@ import time
 class ConnectivityMatrix:
 	'''This class creates the connectivity matrix'''
 
-	def __init__(self,LR,TF,param_net,random_seed):
+	def __init__(self,LR,TF,param_net,random_seed, provided_patterns=None):
 		np.random.seed(random_seed) # fixed the seed 
 		
 		#tranfer function and learning rule
@@ -17,8 +17,10 @@ class ConnectivityMatrix:
 		self.N=int(param_net[0])
 		self.c=param_net[1]
 		self.p=int(param_net[2])			
-		
-		self.patterns_current = np.random.normal(0.,1., size=(self.p,self.N))
+		if provided_patterns is not None:
+			self.patterns_current = provided_patterns
+		else:
+			self.patterns_current = np.random.normal(0.,1., size=(self.p,self.N))
 		self.patterns_fr = self.myTF.TF(self.patterns_current)
 	
 	def seed(self,semilla):
@@ -31,7 +33,7 @@ class ConnectivityMatrix:
 		patterns_pre=self.myLR.g(self.patterns_fr)
 		patterns_post=self.myLR.f(self.patterns_fr)	
 
-		print 'Patterns created. N patterns:',self.p
+		print('Patterns created. N patterns:',self.p)
 		#number of entries different than zero
 		#N2bar=np.random.binomial(self.N*self.N,self.c)
 		#row_ind=np.random.randint(0,high=self.N,size=N2bar)
@@ -43,7 +45,7 @@ class ConnectivityMatrix:
 		row_ind=indexes[0]
 		column_ind=indexes[1]
 		N2bar = len(indexes[1])
-		print 'Structural connectivity created'
+		print('Structural connectivity created')
 		
 		dN=300000
 		n=N2bar/dN
@@ -52,15 +54,15 @@ class ConnectivityMatrix:
 			# fast way to write down the outer product learning
 			con_chunk=np.einsum('ij,ij->j',patterns_post[:,row_ind[l*dN:(l+1)*dN]],patterns_pre[:,column_ind[l*dN:(l+1)*dN]])
 			connectivity=np.concatenate((connectivity,con_chunk),axis=0)
-			print 'Synaptic weights created:',100.*(l)/float(n),'%'
+			print('Synaptic weights created:',100.*(l)/float(n),'%')
 		con_chunk=np.einsum('ij,ij->j',patterns_post[:,row_ind[n*dN:N2bar]],patterns_pre[:,column_ind[n*dN:N2bar]])
-		print 'Synaptic weights created:',100.,'%'
+		print('Synaptic weights created:',100.,'%')
 		connectivity=np.concatenate((connectivity,con_chunk),axis=0)		
 		connectivity=(self.myLR.Amp/(self.c*self.N))*connectivity
-		print 'Synaptic weights created'
+		print('Synaptic weights created')
 
 		connectivity=sparse.csr_matrix((connectivity,(row_ind,column_ind)),shape=(self.N,self.N))
-		print 'connectivity created'
+		print('connectivity created')
 
 		return connectivity
 	

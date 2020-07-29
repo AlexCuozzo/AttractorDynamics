@@ -1,5 +1,5 @@
 import numpy as np
-from transfer_function import *
+from Dynamics.numeric.network_simulation.classes.transfer_function import *
 from scipy import integrate
 from scipy.optimize import brentq
 	
